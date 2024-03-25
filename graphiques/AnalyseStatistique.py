@@ -46,7 +46,7 @@ res = 0
 for i in range(len(nb_form)):
     res += nb_form[i]
     
-moyenne = res / i
+moyenne = res / (i+1)
 print("\033[1;33m V(barre) : \033[0m", moyenne)
 
 
@@ -111,7 +111,7 @@ JOIN
     (select sum(nb_voe_pp) nb_candi, region_etab_aff 
     from REGION natural join DEPARTEMENT natural join ETABLISSEMENT natural join VOEUX natural join STATS
     where session = 2022 group by region_etab_aff
-) AS B ON A.region_etab_aff=B.region_etab_aff;"""
+) AS B ON A.region_etab_aff=B.region_etab_aff group by B.region_etab_aff;"""
 
 cursor.execute(sql_query)
 results = cursor.fetchall()
@@ -142,6 +142,13 @@ plt.scatter(v, e, color='blue', alpha=0.5)
 ######################################
 # courbe de corrélation entre V & E
 ######################################
+# correlation = np.corrcoef(v, e)[0, 1]
+# print("\033[1;33m Corrélation entre e et v : \033[0m", correlation)
+# coefficients = np.polyfit(e, v, 1) # Régression linéaire d'ordre 1 (linéaire)
+# p = np.poly1d(coefficients)  
+# plt.plot(p(e), e, color='red', label='Régression linéaire')
+
+########################################################################################################################################################
 correlation = np.corrcoef(v, e)[0, 1]
 print("\033[1;33m Corrélation entre e et v : \033[0m", correlation)
 coefficients = np.polyfit(e, v, 1) # Régression linéaire d'ordre 1 (linéaire)
@@ -152,7 +159,37 @@ from scipy import stats
 #linregress() renvoie plusieurs variables de retour. On s'interessera 
 # particulierement au slope et intercept
 slope, intercept, r_value, p_value, std_err = stats.linregress(v, e)
-print('prediction pour 1500:', slope * 1500 + intercept)
+print('prediction pour 2500:', slope * 2500 + intercept)
+print('prediction a b :', slope, intercept)
+########################################################################################################################################################
+a,b = slope, intercept
+
+print("La droite de régression linéaire a pour équation y=",round(a,3),"x+",round(b,3))
+print("a:",a, "b:",+b)
+x1=2500
+calcRG=a*x1+b   
+print("calcul de prediction avec","\nax+b","\na:",a,"x:",+x1, "b:",+b, "\n=", calcRG )
+plt.axhline(y=calcRG,color='gray',linestyle='--')
+plt.axvline(x=x1,color='gray',linestyle='--')
+
+
+
+######################################
+#   prediction, courbe representation
+######################################
+
+# a,b = 0.0008718, 155.05281 # valeur de scilab pour CETTE regression
+
+# print("La droite de régression linéaire a pour équation y=",round(a,3),"x+",round(b,3))
+# print("a:",a, "b:",+b)
+# x1=2500
+# calcRG=a*x1+b 
+# print("calcul de prediction avec","\nax+b","\na:",a,"x:",+x1, "b:",+b, "\n=", calcRG*10**4 )
+# # plt.axhline(y=calcRG*10**4,color='gray',linestyle='--')
+# # plt.axvline(x=x1,color='gray',linestyle='--')
+
+
+
 
 ##############################################
 # courbe de moyenne entre V & E (vaux rien)
@@ -165,10 +202,13 @@ print("\033[1;32mmoyenne:",moyenne_v_e,"\033[0m")
 # plt.plot(v, moyenne_v_e, color='green', label='moyenne')
 # plt.plot(moyenne_v_e, e, color='yellow', label='moyennev2')
 
+# plt.plot(e, x1, color='yellow', label='moyennev2')
+# plt.plot(v, v, color='green', label='moyennev2')
+
 
 
 plt.xlabel('Nombre de formations par région en 2022 (V)')
-plt.ylabel('Nombre de candidatures par région en 2022 (E)')
+plt.ylabel('Nombre de candidatures par région en 2022 (E) (*10000)')
 plt.title('Nuage de points (V, E)')
 
 plt.legend(loc='upper right')

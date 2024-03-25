@@ -111,14 +111,6 @@ where contrat_etab = "Public" and dep_lib="Loiret" and g_ea_lib_vx like ("%lycee
 -- | etc...
 -- = Reponse question 178253.
 
--- REVOIR ! 666
--- SELECT distinct dep, dep_lib
--- FROM DEPARTEMENT
--- natural JOIN ETABLISSEMENT WHERE dep NOT IN (
---     SELECT DISTINCT dep FROM ETABLISSEMENT natural join VOEUX 
---     natural join FORMATION natural join FILIERE where fili='BUT'
--- );
-
 SELECT distinct dep, dep_lib
 FROM DEPARTEMENT
 natural JOIN ETABLISSEMENT WHERE not exists (
@@ -126,12 +118,6 @@ natural JOIN ETABLISSEMENT WHERE not exists (
     natural join FORMATION natural join FILIERE where fili='BUT'
 ) ORDER BY dep;
 
--- SELECT distinct dep, dep_lib
--- FROM DEPARTEMENT
--- natural JOIN ETABLISSEMENT WHERE exists (
---     SELECT DISTINCT * FROM ETABLISSEMENT natural join VOEUX 
---     natural join FORMATION natural join FILIERE where fili='BUT'
--- );
 
 -- +-----------------------+--
 -- * Question 178309 : 2pts --
@@ -176,7 +162,7 @@ from ETABLISSEMENT natural join DEPARTEMENT natural join ACADEMIE
 natural join VOEUX natural join FORMATION natural join FILIERE
 where acad_mies ="Versailles" and fili="Licence"; 
 
---  OU (qui est theoriquement mieux ?)
+-- ----  OU (qui est theoriquement mieux ?)
 -- SELECT cod_uai, g_ea_lib_vx, ville_etab, fili, acad_mies
 -- from ETABLISSEMENT natural join DEPARTEMENT natural join ACADEMIE 
 -- natural join VOEUX natural join FORMATION natural join FILIERE
@@ -214,15 +200,6 @@ where acad_mies ="Versailles" and fili="Licence";
 select fili, count(cod_uai) nb_et 
 from ETABLISSEMENT natural join VOEUX natural join FORMATION natural join FILIERE
 where contrat_etab like "%Privé%" group by fili;
-
--- select *
--- from ETABLISSEMENT natural join VOEUX natural join FORMATION natural join FILIERE
---  group by fili;
-
--- select *
--- from FORMATION natural join FILIERE
---  group by fili;
-
 
 -- +-----------------------+--
 -- * Question 178400 : 2pts --
@@ -283,20 +260,6 @@ where session = 2023 and nb_voe_pp =
 -- | etc...
 -- = Reponse question 178466.
 
--- select region1.region_etab_aff, 
---        region1.nb_voeux "session 2022", 
---        region2.nb_voeux "session 2023" 
--- from (
--- select sum(voe_tot) AS nb_voeux, region_etab_aff 
--- from REGION natural join DEPARTEMENT natural join Etablissement natural join VOEUX natural join STATS 
--- where session = 2022 group by region_etab_aff
--- )  AS region1 join (
--- select sum(voe_tot)  AS nb_voeux, region_etab_aff 
--- from REGION natural join DEPARTEMENT natural join Etablissement natural join VOEUX natural join STATS 
--- where session = 2023 group by region_etab_aff 
--- ) AS region2 ON region1.region_etab_aff = region2.region_etab_aff
---  where region1.nb_voeux > region2.nb_voeux;
-
 select region1.region_etab_aff
 
 from (
@@ -348,25 +311,6 @@ where session = 2023 group by fili, acad_mies having acad_mies like "Orléans-To
 -- = Reponse question 178567.
 
 
--- select fili filiere, ifnull(sum(capa_fin),0) nb_voeux 
--- from FILIERE natural left join FORMATION natural left join VOEUX natural  join STATS
--- where session = 2023 and select_form ="formation sélective" group by fili order by nb_voeux desc;
-
--- select fili filiere, ifnull(sum(capa_fin),0) nb_voeux 
--- from FILIERE natural left join FORMATION natural left join VOEUX natural  join STATS
--- where session = 2023 and select_form ="formation sélective" group by fili order by nb_voeux desc;
-
--- create or replace view fili2023 as (
---     select fili, capa_fin 
---         from FILIERE natural left join FORMATION natural left join VOEUX natural join STATS
---             where session = 2023 and select_form = "formation sélective"
---                 );
-
--- select fili filiere, ifnull(sum(capa_fin),0) nb_voeux 
---     from FILIERE natural left join fili2023 
---         group by fili 
---             order by nb_voeux desc;
-
 with fili2023 (fili, capa_fin) as (
     select fili, capa_fin 
         from FILIERE natural left join FORMATION natural left join VOEUX natural join STATS
@@ -403,54 +347,6 @@ select fili filiere, ifnull(sum(capa_fin),0) nb_voeux
 -- OU
 
 -- INSERT INTO STATS(session, capa_fin) VALUES (2023, 15);
-
-
--- +-------------------+----------+-------------------+
--- | 7 Analyse statistique
--- | L’objectif de cette partie est d’analyser certaines données de la base d’un point de vue statistique.
--- | Les notations utilisées ici sont celles du cours de statistiques descriptives.
--- |
--- | 1) Extraire de la base de données le nombre de formations par région en 2022, vous obtenez un
--- | premier jeu de 21 données notée V. Calculez
--- | (bar)V =
--- | La médiane de V =
--- | Le mode de V =
--- +-------------------+----------+-------------------+
-
--- select count(num_form) nb_form, region_etab_aff from REGION natural join DEPARTEMENT 
--- natural join ETABLISSEMENT natural join VOEUX natural join STATS 
--- where session = 2022 group by region_etab_aff;
-
--- +-------------------+----------+-------------------+
--- | 7 Analyse statistique
--- | L’objectif de cette partie est d’analyser certaines données de la base d’un point de vue statistique.
--- | Les notations utilisées ici sont celles du cours de statistiques descriptives.
--- |
--- | 1) Extraire de la base de données le nombre de formations par région en 2022, vous obtenez un
--- | premier jeu de 21 données notée V. Calculez
--- | (barre)V = 570.15
--- | La médiane de V = 506
--- | Le mode de V = 1336
--- |
--- |2) Extraire le nombre de candidatures effectuées par région en 2022 lors de la phase principale,
--- | ces valeurs constituent une seconde statistique notée E. Vous obtenez ainsi la statistique double
--- | (V, E). Tracez le nuage de points (V, E).
--- | Voyez-vous apparaitre (visuellement) une corrélation linéaire entre V et E ?
--- | Oui on peut en appercevoir une (la ou il y a le plus gros des points on peut appercevoir vers ou elle sera)
--- |
--- | Calculez le coefficient de corrélation ρV,E du couple (V, E)
--- | ρV,E =  0.4899266024077246
--- | Qu’en déduisez vous ?
--- | une corrélation de 0.4899 est une corrélation positive entre ces deux ensembles on sait que si l'un monde l'autre aussi et vice versa
--- |
--- | 3) En vous servant d’un outil mathématiques de prédiction vu en cours de statistiques, quel
--- | nombre de candidatures minimum anticipez-vous si le nombre de formations d’une région augmente 
--- | au-delà de 2500 ? (Détaillez votre démarche et vos calculs)
--- | jsp
--- |
--- |
--- | VOIR AnalyseStatistique.py
--- +-------------------+----------+-------------------+
 
 
 
